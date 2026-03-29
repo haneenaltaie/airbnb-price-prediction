@@ -138,6 +138,31 @@ These troubleshooting steps were an important part of the project because they r
 - `airbnb_final_report.pdf` → final written report
 - `inference.py` → custom inference script for deployment
 - `sagemaker_notebook_screenshots.pdf` → supporting screenshots from SageMaker workflow
+- `requirements.txt` → required Python libraries
+
+---
+
+## How to Run
+
+1. Open the notebook `airbnb-sagemaker.ipynb`
+2. Install the required libraries from `requirements.txt`
+3. Run the notebook cells in order
+4. Review model evaluation results and deployment steps
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Project Evidence
+
+This repository also includes:
+- SageMaker notebook screenshots
+- deployment workflow screenshots
+- final report documentation
+
+These files help show the full machine learning workflow from experimentation to cloud deployment.
 
 ---
 
@@ -161,12 +186,3 @@ This project demonstrates a full end-to-end machine learning workflow:
 **data cleaning → feature engineering → model training → evaluation → deployment**
 
 It was built not only to improve prediction performance, but also to gain hands-on experience with real-world cloud deployment and machine learning operations.
-
-## Project Evidence
-
-This repository also includes:
-- SageMaker notebook screenshots
-- deployment workflow screenshots
-- final report documentation
-
-These files help show the full machine learning workflow from experimentation to cloud deployment.
