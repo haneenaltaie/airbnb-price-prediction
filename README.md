@@ -161,3 +161,12 @@ This project demonstrates a full end-to-end machine learning workflow:
 **data cleaning → feature engineering → model training → evaluation → deployment**
 
 It was built not only to improve prediction performance, but also to gain hands-on experience with real-world cloud deployment and machine learning operations.
+
+## Project Evidence
+
+This repository also includes:
+- SageMaker notebook screenshots
+- deployment workflow screenshots
+- final report documentation
+
+These files help show the full machine learning workflow from experimentation to cloud deployment.
