@@ -17,12 +17,12 @@ This project implements a complete end-to-end machine learning pipeline on **Ama
 ## Repository Structure
 
 ```
-├── Airbnb_Price_Pipeline.ipynb   ✅
-├── Airbnb_Price_Pipeline.pdf     ✅
-├── Airbnb_Report_.pdf            ✅
-├── airnb.xls                     ✅ (was airbnb.csv before)
-├── inference.py                  ✅
-├── README.md                     ✅
+├── Airbnb_Price_Pipeline.ipynb   # Main notebook — complete ML pipeline
+├── Airbnb_Price_Pipeline.pdf     # Notebook exported as PDF
+├── Airbnb_Report_.pdf            # Final project report
+├── airnb.xls                     # Raw dataset (953 rows, 7 columns)
+├── inference.py                  # SageMaker inference script for RF endpoint
+├── README.md                     # This file
 ```
 
 ---
@@ -131,7 +131,7 @@ This project implements a complete end-to-end machine learning pipeline on **Ama
 
 > **Requirements:** AWS account with SageMaker access, JupyterLab environment on SageMaker
 
-1. Upload `airbnb.csv` and `final_airbnb_ml.csv` to your SageMaker JupyterLab instance
+1. Upload `airnb.xls` to your SageMaker JupyterLab instance
 2. Upload `Airbnb_Price_Pipeline.ipynb` and `inference.py`
 3. Open the notebook and run all cells top to bottom
 4. All AWS resources (endpoints) are deleted automatically in Step 7
