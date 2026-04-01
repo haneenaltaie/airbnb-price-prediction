@@ -17,11 +17,12 @@ This project implements a complete end-to-end machine learning pipeline on **Ama
 ## Repository Structure
 
 ```
-├── Airbnb_Price_Pipeline.ipynb   # Main notebook — complete ML pipeline
-├── airbnb.csv                    # Raw dataset (953 rows, 7 columns)
-├── final_airbnb_ml.csv           # Preprocessed dataset (953 rows, 671 columns)
-├── inference.py                  # SageMaker inference script for RF endpoint
-├── README.md                     # This file
+├── Airbnb_Price_Pipeline.ipynb   ✅
+├── Airbnb_Price_Pipeline.pdf     ✅
+├── Airbnb_Report_.pdf            ✅
+├── airnb.xls                     ✅ (was airbnb.csv before)
+├── inference.py                  ✅
+├── README.md                     ✅
 ```
 
 ---
