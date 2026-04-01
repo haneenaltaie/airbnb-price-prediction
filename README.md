@@ -1,156 +1,160 @@
-# Airbnb Price Prediction — Complete ML Pipeline
-**AIGC 5003 — Machine Learning in Cloud Computing**  
-**Author: Haneen Altaie | AI Integration and Governance, Humber College**
+# Airbnb Nightly Price Prediction — Complete ML Pipeline
+
+> **AIGC 5003 — Machine Learning in Cloud Computing**  
+> Humber College | Haneen Al-Taie | N01073800 | April 2026
 
 ---
 
 ## Project Overview
-This project builds a complete end-to-end machine learning pipeline to predict 
-Airbnb nightly listing prices using Amazon SageMaker. The pipeline covers data 
-loading, feature engineering, cloud-based training, hyperparameter tuning, 
-real-time endpoint deployment, and resource cleanup.
+
+This project implements a complete end-to-end machine learning pipeline on **Amazon SageMaker** to predict Airbnb nightly listing prices. Starting from raw listing data, the pipeline covers data loading, feature engineering, model training, hyperparameter tuning, real-time endpoint deployment, and inferencing.
+
+**Problem Statement:**
+> *"Prediction of Airbnb nightly listing prices using property features, host attributes, seasonal demand, and location data."*
 
 ---
 
-## Final Results
+## Repository Structure
 
-| Metric | Value |
-|--------|-------|
-| MAE | $54.98 |
-| RMSE | $74.23 |
-| R² | 0.2109 |
-| Features | 529 engineered features |
-| Dataset size | 953 listings |
-| Outliers removed | 48 listings above $441 |
-| Solo Training RMSE | 76.98 |
-| HP Tuning Best RMSE | 72.75 |
-| MAE improvement | 26% better than baseline |
-| RMSE improvement | 41% better than baseline |
+```
+├── Airbnb_Price_Pipeline.ipynb   # Main notebook — complete ML pipeline
+├── airbnb.csv                    # Raw dataset (953 rows, 7 columns)
+├── final_airbnb_ml.csv           # Preprocessed dataset (953 rows, 671 columns)
+├── inference.py                  # SageMaker inference script for RF endpoint
+├── README.md                     # This file
+```
 
 ---
 
-## Pipeline Steps
+## Pipeline Overview
 
-| Step | Description | Key Output |
-|------|-------------|------------|
-| 1 | Data Loading & Analysis | EDA plots, basic statistics |
-| 2 | Feature Engineering | 529 features including location |
-| 3 | SageMaker XGBoost Training Job | validation:rmse = 76.98 |
-| 4 | Hyperparameter Tuning (10 jobs) | Best validation:rmse = 72.75 |
-| 5 | Model Deployment (ml.m5.large) | Real-time endpoint |
-| 6 | Inferencing & Validation | MAE=$54.98, RMSE=$74.23, R²=0.2109 |
-| 7 | Resource Cleanup | Endpoint deleted |
+| Step | Description | Tool |
+|------|-------------|------|
+| 1 | Data Loading & Analysis | pandas, seaborn |
+| 2 | Cleaning & Feature Engineering (537 features) | pandas, regex |
+| 3 | BM1 — XGBoost baseline training | SageMaker built-in XGBoost |
+| 4 | BM2 — Bayesian hyperparameter tuning | SageMaker HyperparameterTuner |
+| 5 | BM3 — Random Forest deployment | SageMaker SKLearnModel |
+| 6 | Inferencing & Evaluation | SageMaker endpoint |
+| 7 | Resource Cleanup | boto3 |
+| 8 | Reflection & Data Insights | matplotlib, numpy |
 
 ---
 
-## Feature Engineering
-Features extracted from raw listing data:
+## Dataset
+
+| Property | Value |
+|----------|-------|
+| Source | Raw Airbnb listings |
+| Raw rows | 953 |
+| Raw columns | 7 (Title, Detail, Date, Price, Offer Price, Review & Rating, Beds) |
+| After cleaning | 905 rows |
+| Features engineered | 537 |
+| Outlier cutoff | 95th percentile ($441) |
+| Target variable | `price(in_dollar)` |
+
+### Features Engineered from Raw Data
 
 | Feature | Description |
 |---------|-------------|
 | `beds` | Number of beds extracted from text |
 | `rating` | Numerical score from review column |
 | `num_reviews` | Review count from parentheses |
-| `discount_pct` | Discount between price and offer price |
-| `detail_length` | Character count of listing description |
-| `is_luxury` | Keyword flag from description |
-| `has_hot_tub` | Keyword flag from description |
-| `has_pool` | Keyword flag from description |
-| `has_pets` | Keyword flag from description |
-| `is_treehouse` | Keyword flag from description |
+| `is_luxury` | Keyword flag from listing description |
+| `has_hot_tub` | Keyword flag from listing description |
+| `has_pool` | Keyword flag from listing description |
+| `has_pets` | Keyword flag from listing description |
 | `property_type` | Extracted from title, one-hot encoded |
+| `detail_length` | Character count of listing description |
+| `discount_pct` | Percentage discount between price and offer price |
 | `state` | Extracted from title (e.g. Washington, New York) |
 | `city` | Extracted from title (e.g. Skykomish, Hancock) |
-
-Adding `state` and `city` location features increased feature count 
-from 42 to 529 and improved R² from 0.1852 to 0.2109 — a 14% improvement.
-
----
-
-## Models Used
-
-- **SageMaker Built-in XGBoost** — used for training job and hyperparameter tuning
-- **Random Forest Regressor (scikit-learn)** — used for the deployed endpoint
+| `season` | Season from listing date (Summer, Winter, Spring, Fall) |
+| `quarter` | Quarter from listing date (Q1, Q2, Q3, Q4) |
 
 ---
 
-## AWS SageMaker Deployment
+## Benchmark Results
 
-Deployment workflow:
-1. Upload data splits to Amazon S3
-2. Train XGBoost model on separate `ml.m5.xlarge` instance
-3. Run 10 hyperparameter tuning jobs automatically
-4. Train Random Forest v3 on 529 engineered features
-5. Package model as `model.tar.gz` and upload to S3
-6. Deploy real-time endpoint on `ml.m5.large` using scikit-learn 1.4-2
-7. Validate endpoint — results match local model exactly
-8. Delete endpoint immediately to avoid per-hour charges
+| Benchmark | Dataset | Features | Metric | Result | vs Baseline |
+|-----------|---------|----------|--------|--------|-------------|
+| BM1 — XGBoost default HP | sagemaker_train.csv | 537 engineered | validation:rmse | **71.84** | baseline |
+| BM2 — XGBoost tuned HP | sagemaker_train.csv | 537 engineered | validation:rmse | **66.77** | ↓ -5.07 |
+| BM3 — Random Forest endpoint | 537 engineered | RMSE / MAE / R² | **71.62 / $52.64 / 0.2655** | deployed |
 
----
+### Best Hyperparameters (BM2)
 
-## Deployment Challenges Solved
+| Parameter | Value |
+|-----------|-------|
+| eta | 0.1778 |
+| max_depth | 4 |
+| num_round | 108 |
+| subsample | 0.8998 |
+| objective | reg:squarederror |
 
-| Issue | Fix |
-|-------|-----|
-| sklearn version mismatch | Retrained with scikit-learn 1.4.2 |
-| ml.t2.medium memory error | Switched to ml.m5.large |
-| KeyError on price(in_dollar) | Used positional indexing |
-| %%writefile in wrong cell | Moved to separate cell |
+### Deployed Endpoint Results (BM3)
 
----
-
-## Tech Stack
-
-- Python, Pandas, NumPy, Scikit-learn, XGBoost
-- Matplotlib, Seaborn
-- Amazon SageMaker, Amazon S3
-- Joblib, Tarfile
-- Region: ca-central-1
+| Metric | Value |
+|--------|-------|
+| MAE | $52.64 |
+| RMSE | $71.62 |
+| R² | 0.2655 |
 
 ---
 
-## Project Files
+## Key Findings
 
-| File | Description |
-|------|-------------|
-| `airbnb-sagemaker.ipynb` | Main notebook — complete pipeline |
-| `Airbnb_Price_Pipeline.pdf` | Exported notebook with all outputs |
-| `inference.py` | Custom inference script for endpoint |
-| `airbnb_final_report.pdf` | Final written report |
-| `requirements.txt` | Required Python libraries |
+1. **Season** — Spring listings average $187 (most expensive). Summer has the most listings (583) but lowest average price ($129) — high supply drives prices down.
+2. **Quarter** — Q3 (Jul–Sep) is the most expensive quarter at $154.90/night.
+3. **Location** — North Carolina ($235) and California ($227) command the highest prices. Location is the strongest single price driver.
+4. **Amenities** — A hot tub adds the most value (+$76), more than a luxury label (+$35). Pool and pet-friendly listings showed slight negative correlation with price.
+5. **Property Type** — Dome ($235) and Villa ($202) are the most premium types. Hotels ($67) and Rooms ($98) are the most affordable.
+6. **Feature Engineering vs Tuning** — Feature engineering improved RMSE by 5.07 points. This proved that investing in meaningful data preparation is more valuable than hyperparameter tuning alone.
+
+---
+
+## Infrastructure
+
+| Setting | Value |
+|---------|-------|
+| Region | ca-central-1 (Canada Central) |
+| Training instance | ml.m5.xlarge |
+| Hosting instance | ml.m5.large |
+| Framework | scikit-learn 1.4-2 |
+| XGBoost version | 1.7-1 |
+| S3 bucket | sagemaker-ca-central-1-263245924849 |
 
 ---
 
 ## How to Run
 
-1. Open `airbnb-sagemaker.ipynb` in SageMaker JupyterLab
-2. Install required libraries:
-```bash
-pip install -r requirements.txt
+> **Requirements:** AWS account with SageMaker access, JupyterLab environment on SageMaker
+
+1. Upload `airbnb.csv` and `final_airbnb_ml.csv` to your SageMaker JupyterLab instance
+2. Upload `Airbnb_Price_Pipeline.ipynb` and `inference.py`
+3. Open the notebook and run all cells top to bottom
+4. All AWS resources (endpoints) are deleted automatically in Step 7
+
+> ⚠️ Make sure to run Step 7 (Resource Cleanup) to avoid unnecessary AWS charges
+
+---
+
+## Libraries Used
+
+```python
+pandas, numpy, matplotlib, seaborn      # Data analysis & visualization
+scikit-learn                            # Random Forest, metrics, train_test_split
+boto3                                   # AWS SDK
+sagemaker                               # SageMaker Python SDK
+joblib, tarfile                         # Model packaging
+re, os                                  # Feature engineering utilities
 ```
-3. Run all cells in order (Kernel → Restart & Run All)
-4. Review results in the final summary cell
 
 ---
 
-## Key Learning Outcomes
+## Author
 
-- End-to-end ML pipeline development on AWS
-- Feature engineering from raw text data
-- Cloud-based training on separate compute instances
-- Automated hyperparameter tuning with SageMaker
-- Real-time model deployment and endpoint validation
-- Debugging real cloud deployment issues
-- Cost management (endpoint cleanup)
-
----
-
-## Conclusion
-
-This project demonstrates a complete machine learning workflow:
-
-**data cleaning → feature engineering → cloud training → 
-hyperparameter tuning → deployment → validation → cleanup**
-
-Built to gain hands-on experience with real-world cloud ML deployment 
-on Amazon SageMaker, while achieving a 26% improvement in MAE over baseline.
+**Haneen Al-Taie**  
+Student ID: N01073800  
+Program: AI Integration and Governance  
+Humber College | April 2026
